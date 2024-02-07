@@ -1,14 +1,16 @@
 import base64
-import tkinter as tk
-from tkinter import messagebox
 from hashlib import md5
+from os.path import dirname, realpath
+from json import dump, load
+from genericpath import exists
+from PIL import ImageTk, Image 
+
+import tkinter as tk
+from tkinter import messagebox, filedialog
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from os.path import dirname, realpath
-from json import dump, load
-from genericpath import exists
 
 dir_path = dirname(realpath(__file__))
 People = dict(load(open(dir_path + "\\People.json")))
@@ -22,9 +24,10 @@ class Login(tk.Tk):
         self.Password = ""
         
         self.title("Login Form")
-        self.geometry('{}x{}'.format(250, 155))
+        self.geometry('{}x{}+{}+{}'.format(250, 155, 750, 250))
         self.resizable(width=False, height=False)
 
+        self.bind('<Return>', self.validate_login)
         self.create_widgets()
 
     def create_widgets(self):
@@ -49,15 +52,19 @@ class Login(tk.Tk):
         self.quit_button = tk.Button(self, text="Quit", command=self.destroy)
         self.quit_button.pack()
 
-    def check_user_password(self, userid, password):
-        md5User, md5Pswd = md5(userid.encode()).hexdigest(), md5(password.encode()).hexdigest()
-        return ((userid if md5Pswd == People.get(md5User, "") else False) if People.get(md5User) else False)
+        self.bind('<Escape>', lambda event: (self.destroy()))
+
+    def check_user_password(self, userid : str, password : str):
+        username_md5 = self.md5_hex(userid)
+        password_md5 = self.md5_hex(password)
+
+        return ((userid if password_md5 == People.get(username_md5, "") else False) if People.get(username_md5) else False)
 
     def create_user(self):
         root = tk.Tk()
 
         root.title("Creation Form")
-        root.geometry('{}x{}'.format(250, 150))
+        root.geometry('{}x{}+{}+{}'.format(250, 155, 750, 550))
         root.resizable(width=False, height=False)
 
         username_label = tk.Label(root, text="Username:")
@@ -75,18 +82,29 @@ class Login(tk.Tk):
         login_button = tk.Button(root, text="Create User", command=lambda: (self.create_user_logic(root)))
         login_button.pack()
 
+        root.bind('<Return>', lambda event: (self.create_user_logic(root)))
+        root.bind('<Escape>', lambda event: (root.destroy()))
         root.mainloop()
 
-    def create_user_logic(self, root):
-        if md5(self.create_username_entry.get().encode()).hexdigest() not in People:
-            People[md5(self.create_username_entry.get().encode()).hexdigest()] = md5(self.create_password_entry.get().encode()).hexdigest()
+    def md5_hex(self, text : str):
+        return md5(text.encode()).hexdigest()
+
+    def create_user_logic(self, root : tk.Tk):
+        username = self.create_username_entry.get()
+        username_md5 = self.md5_hex(username)
+
+        password = self.create_password_entry.get()
+        password_md5 = self.md5_hex(password)
+
+        if not username_md5 in People:
+            People[username_md5] = password_md5
             with open(dir_path + "\\People.json", "w") as file:
                 dump(People, file)
         else:
             messagebox.showerror("Creation Failed", "Username Already Exists.")
         root.destroy()
 
-    def validate_login(self):
+    def validate_login(self, event = None):
         userid = self.username_entry.get()
         password = self.password_entry.get()
 
@@ -100,19 +118,20 @@ class Login(tk.Tk):
             messagebox.showerror("Login Failed", "Invalid username or password")
 
 class Application(tk.Tk):
-    def __init__(self, userid, password):
+    def __init__(self, userid : str, password : str):
         super().__init__()
         self.Password = password
         self.UserID = userid
 
         self.title("Application")
-        self.geometry('{}x{}'.format(800, 400))
+        self.geometry('{}x{}+{}+{}'.format(800, 400, 500, 220))
         self.resizable(width=False, height=False)
 
         self.messageBox = tk.Text(self, width=100, height=23)
         self.messageBox.pack()
 
         self.protocol("WM_DELETE_WINDOW", self.close)
+        self.bind('<Escape>', lambda event: (self.close()))
 
     def close(self):
         self.encrypt()
