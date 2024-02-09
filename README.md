@@ -1,6 +1,7 @@
 # SecureNotepad
-
-**Note**: I cannot confirm this is fully secure yet. If anyone is up for the challenge to attempt and breach an account, go for it. But remember this would be breached once compiled into ".exe" and with proper locations for the user and note files.
+This is a application created for encrypting data from a notepad-like application.  <br />
+ <br />
+*Note:* I hope that this is fully secure if anyone can make it more secure pull requests are welcome, or, if you just have an idea you can use the Issues tab. <br />
 
 To create a user, follow these steps:
 1. Press the "Create User" Button.
