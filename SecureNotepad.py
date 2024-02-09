@@ -46,13 +46,13 @@ class Login(ctk.CTk):
         self.password_entry.pack()
 
         self.login_button =  ctk.CTkButton(self, text="Login", command=self.validate_login)
-        self.login_button.pack(fill="x", pady = 1)
+        self.login_button.pack(fill="x", pady = 1, padx=10)
 
         self.create_button =  ctk.CTkButton(self, text="Create User", command=self.create_user)
-        self.create_button.pack(fill="x", pady = 1)
+        self.create_button.pack(fill="x", pady = 1, padx=10)
 
         self.quit_button =  ctk.CTkButton(self, text="Quit", command=self.destroy)
-        self.quit_button.pack(fill="x", pady = 1)
+        self.quit_button.pack(fill="x", pady = 1, padx=10)
 
         self.bind('<Escape>', lambda event: (self.destroy()))
 
@@ -82,7 +82,7 @@ class Login(ctk.CTk):
         self.create_password_entry.pack()
 
         login_button =  ctk.CTkButton(root, text="Create User", command=lambda: (self.create_user_logic(root)))
-        login_button.pack()
+        login_button.pack(padx=10, pady=1)
 
         root.bind('<Return>', lambda event: (self.create_user_logic(root)))
         root.bind('<Escape>', lambda event: (root.destroy()))
