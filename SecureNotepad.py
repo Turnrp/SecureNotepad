@@ -211,7 +211,7 @@ class Application(ctk.CTk):
         newButton.pack(pady=5)
         self.Note_Buttons[name] = newButton
 
-if not __name__ == "__main__":
+if __name__ == "__main__":
     print("Starting..")
     login = Login()
     login.mainloop()
