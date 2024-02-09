@@ -8,7 +8,7 @@ To create a user, follow these steps:
 3. Enter the credentials into the login page.
 4. Now you have your secure notes!
 
-**What It Looks Like:**
+**What It Looks Like:** <br />
 *Login Form:* <br />
 ![image](https://github.com/Turnrp/SecureNotepad/assets/70816015/6eff55a6-5173-475c-be8c-129563016bf5) <br />
 *Create Form:* <br />
