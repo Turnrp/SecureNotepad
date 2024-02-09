@@ -9,8 +9,8 @@ To create a user, follow these steps:
 4. Now you have your secure notes!
 
 ## Future Plans:
-- Full UI Overhaul
+- ~~Full UI Overhaul~~
 - Enhanced Security Measures
-- Image Support
-- Separate Notes for Individual Users
+- *Image Support (Cancelled But May Come Back To)*
+- ~~Separate Notes for Individual Users~~
 - Developing it into an actual application for securing data
