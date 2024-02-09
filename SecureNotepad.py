@@ -1,12 +1,14 @@
+import customtkinter as ctk
+from customtkinter import E, END, N, S, W
 import base64
 from hashlib import md5
 from os.path import dirname, realpath
-from json import dump, load
+from json import dump, load, dumps, loads
 from genericpath import exists
 from PIL import ImageTk, Image 
 
 import tkinter as tk
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, simpledialog
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -15,7 +17,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 dir_path = dirname(realpath(__file__))
 People = dict(load(open(dir_path + "\\People.json")))
 
-class Login(tk.Tk):
+class Login(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.loggedIn = False
@@ -24,33 +26,33 @@ class Login(tk.Tk):
         self.Password = ""
         
         self.title("Login Form")
-        self.geometry('{}x{}+{}+{}'.format(250, 155, 750, 250))
+        self.geometry('{}x{}+{}+{}'.format(250, 200, 750, 250))
         self.resizable(width=False, height=False)
 
         self.bind('<Return>', self.validate_login)
         self.create_widgets()
 
     def create_widgets(self):
-        self.username_label = tk.Label(self, text="Username:")
+        self.username_label =  ctk.CTkLabel(self, text="Username:")
         self.username_label.pack()
 
-        self.username_entry = tk.Entry(self)
+        self.username_entry =  ctk.CTkEntry(self)
         self.username_entry.pack()
 
-        self.password_label = tk.Label(self, text="Password:")
+        self.password_label =  ctk.CTkLabel(self, text="Password:")
         self.password_label.pack()
 
-        self.password_entry = tk.Entry(self, show="*")
+        self.password_entry =  ctk.CTkEntry(self, show="*")
         self.password_entry.pack()
 
-        self.login_button = tk.Button(self, text="Login", command=self.validate_login)
-        self.login_button.pack()
+        self.login_button =  ctk.CTkButton(self, text="Login", command=self.validate_login)
+        self.login_button.pack(fill="x", pady = 1)
 
-        self.create_button = tk.Button(self, text="Create User", command=self.create_user)
-        self.create_button.pack()
+        self.create_button =  ctk.CTkButton(self, text="Create User", command=self.create_user)
+        self.create_button.pack(fill="x", pady = 1)
 
-        self.quit_button = tk.Button(self, text="Quit", command=self.destroy)
-        self.quit_button.pack()
+        self.quit_button =  ctk.CTkButton(self, text="Quit", command=self.destroy)
+        self.quit_button.pack(fill="x", pady = 1)
 
         self.bind('<Escape>', lambda event: (self.destroy()))
 
@@ -61,25 +63,25 @@ class Login(tk.Tk):
         return ((userid if password_md5 == People.get(username_md5, "") else False) if People.get(username_md5) else False)
 
     def create_user(self):
-        root = tk.Tk()
+        root =  ctk.CTk()
 
         root.title("Creation Form")
         root.geometry('{}x{}+{}+{}'.format(250, 155, 750, 550))
         root.resizable(width=False, height=False)
 
-        username_label = tk.Label(root, text="Username:")
+        username_label =  ctk.CTkLabel(root, text="Username:")
         username_label.pack()
 
-        self.create_username_entry = tk.Entry(root)
+        self.create_username_entry =  ctk.CTkEntry(root)
         self.create_username_entry.pack()
 
-        password_label = tk.Label(root, text="Password:")
+        password_label = ctk.CTkLabel(root, text="Password:")
         password_label.pack()
 
-        self.create_password_entry = tk.Entry(root, show="*")
+        self.create_password_entry =  ctk.CTkEntry(root, show="*")
         self.create_password_entry.pack()
 
-        login_button = tk.Button(root, text="Create User", command=lambda: (self.create_user_logic(root)))
+        login_button =  ctk.CTkButton(root, text="Create User", command=lambda: (self.create_user_logic(root)))
         login_button.pack()
 
         root.bind('<Return>', lambda event: (self.create_user_logic(root)))
@@ -89,7 +91,7 @@ class Login(tk.Tk):
     def md5_hex(self, text : str):
         return md5(text.encode()).hexdigest()
 
-    def create_user_logic(self, root : tk.Tk):
+    def create_user_logic(self, root : ctk.CTk):
         username = self.create_username_entry.get()
         username_md5 = self.md5_hex(username)
 
@@ -117,7 +119,7 @@ class Login(tk.Tk):
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
 
-class Application(tk.Tk):
+class Application(ctk.CTk):
     def __init__(self, userid : str, password : str):
         super().__init__()
         self.Password = password
@@ -127,11 +129,22 @@ class Application(tk.Tk):
         self.geometry('{}x{}+{}+{}'.format(800, 400, 500, 220))
         self.resizable(width=False, height=False)
 
-        self.messageBox = tk.Text(self, width=100, height=23)
-        self.messageBox.pack()
+        self.notesFrame = ctk.CTkScrollableFrame(self, width=150)
+        self.notesFrame.pack(fill="y", side="left")
+
+        self.messageBox =  ctk.CTkTextbox(self, width=800, height=400)
+        self.messageBox.pack(fill="both")
+
+        self.new_note_button = ctk.CTkButton(self.notesFrame, text="New Note", command=lambda: self.new_note(simpledialog.askstring("New Note", "What do you wanna name the note?")))
+        self.new_note_button.pack(pady=5)
+
+        self.rem_note_button = ctk.CTkButton(self.notesFrame, text="Remove Note", command=lambda: self.rem_note_button(messagebox.askokcancel("Remove Note?", f"Do you wanna delete {self.currentNote}")))
+        self.rem_note_button.pack(pady=5)
 
         self.protocol("WM_DELETE_WINDOW", self.close)
         self.bind('<Escape>', lambda event: (self.close()))
+
+        self.Note_Buttons = {}
 
     def close(self):
         self.encrypt()
@@ -148,13 +161,15 @@ class Application(tk.Tk):
         return Fernet(key)
 
     def encrypt(self):
+        self.Notes[self.currentNote] = self.messageBox.get("1.0", tk.END)
         with open(self.file_path, "wb") as file:
-            file.write(self.fernet.encrypt(self.messageBox.get("1.0", tk.END).encode()))
+            file.write(self.fernet.encrypt(dumps(self.Notes).encode()))
 
-    def decrypt(self):
+    def decrypt(self) -> dict:
         with open(self.file_path, "rb") as file:
-            read = file.read()
-            return self.fernet.decrypt(read)
+            Decrypted_Notes = self.fernet.decrypt(file.read()).decode()
+            NewNotes = loads(Decrypted_Notes)
+            return NewNotes
 
     def load(self):
         self.fernet = self.generate_fernet_key()
@@ -163,12 +178,40 @@ class Application(tk.Tk):
         if not exists(self.file_path):
             open(self.file_path, "w")
         if open(self.file_path, "r").read():
-            decrypted_message = self.decrypt()
-            if decrypted_message:
-                self.messageBox.insert("1.0", decrypted_message)
-        self.mainloop()
+            self.Notes = self.decrypt()
+            if self.Notes:
+                self.currentNote = list(self.Notes.keys())[0]
+                self.messageBox.insert("1.0", self.Notes[self.currentNote])
 
-if __name__ == "__main__":
+                for i in list(self.Notes.keys()):
+                    self.create_note_button(i)
+        self.mainloop()
+    
+    def open_note(self, name):
+        self.Notes[self.currentNote] = self.messageBox.get("1.0", tk.END)
+
+        self.currentNote = name
+        self.messageBox.delete("1.0", tk.END)
+        self.messageBox.insert("1.0", self.Notes[self.currentNote])
+    
+    def delete_note(self, confirm):
+        if confirm:
+            del self.Notes[self.currentNote]
+            del self.Note_Buttons[self.currentNote]
+            self.currentNote = list(self.Notes.keys())[0]
+    
+    def new_note(self, name):
+        if name:
+            self.Notes[name] = ""
+            self.open_note(name)
+            self.create_note_button(name)
+    
+    def create_note_button(self, name):
+        newButton = ctk.CTkButton(self.notesFrame, text=name, command=lambda: self.open_note(name))
+        newButton.pack(pady=5)
+        self.Note_Buttons[name] = newButton
+
+if not __name__ == "__main__":
     print("Starting..")
     login = Login()
     login.mainloop()
