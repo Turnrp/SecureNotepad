@@ -10,7 +10,6 @@ To create a user, follow these steps:
 
 ## Future Plans:
 - ~~Full UI Overhaul~~
-- Enhanced Security Measures
 - *Image Support (Cancelled But May Come Back To)*
 - ~~Separate Notes for Individual Users~~
-- Developing it into an actual application for securing data
+- Developing it into an actual application & Releasing
