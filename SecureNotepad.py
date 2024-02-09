@@ -132,13 +132,17 @@ class Application(ctk.CTk):
         self.notesFrame = ctk.CTkScrollableFrame(self, width=150)
         self.notesFrame.pack(fill="y", side="left")
 
+        self.current_note_label = ctk.CTkLabel(self, width=800)
+        
+        self.current_note_label.pack(fill="x")
+
         self.messageBox =  ctk.CTkTextbox(self, width=800, height=400)
         self.messageBox.pack(fill="both")
 
         self.new_note_button = ctk.CTkButton(self.notesFrame, text="New Note", command=lambda: self.new_note(simpledialog.askstring("New Note", "What do you wanna name the note?")))
         self.new_note_button.pack(pady=5)
 
-        self.rem_note_button = ctk.CTkButton(self.notesFrame, text="Remove Note", command=lambda: self.rem_note_button(messagebox.askokcancel("Remove Note?", f"Do you wanna delete {self.currentNote}")))
+        self.rem_note_button = ctk.CTkButton(self.notesFrame, text="Remove Note", command=lambda: self.delete_note_fromButton(messagebox.askokcancel("Remove Note?", f"Do you wanna delete {self.currentNote}")))
         self.rem_note_button.pack(pady=5)
 
         self.protocol("WM_DELETE_WINDOW", self.close)
@@ -176,29 +180,53 @@ class Application(ctk.CTk):
         self.file_path = dir_path + "\\Notes\\" + self.UserID + ".txt"
         
         if not exists(self.file_path):
-            open(self.file_path, "w")
+            with open(self.file_path, "w"):
+                self.Notes = {"Blank Note" : "Write Something!"}
+                self.currentNote = "Blank Note"
+                self.current_note_label.configure(text = self.currentNote)
+                self.messageBox.insert("1.0", self.Notes[self.currentNote])
         if open(self.file_path, "r").read():
             self.Notes = self.decrypt()
             if self.Notes:
                 self.currentNote = list(self.Notes.keys())[0]
                 self.messageBox.insert("1.0", self.Notes[self.currentNote])
-
-                for i in list(self.Notes.keys()):
-                    self.create_note_button(i)
+        for i in list(self.Notes.keys()):
+            self.create_note_button(i)
+            if not i:
+                self.delete_note('', True, False)
+        
+        self.current_note_label.configure(text = self.currentNote)
         self.mainloop()
     
     def open_note(self, name):
         self.Notes[self.currentNote] = self.messageBox.get("1.0", tk.END)
 
         self.currentNote = name
+        self.current_note_label.configure(text = self.currentNote)
         self.messageBox.delete("1.0", tk.END)
         self.messageBox.insert("1.0", self.Notes[self.currentNote])
     
-    def delete_note(self, confirm):
+    def delete_note(self, name, confirm, hasButton=True):
         if confirm:
-            del self.Notes[self.currentNote]
-            del self.Note_Buttons[self.currentNote]
-            self.currentNote = list(self.Notes.keys())[0]
+            if hasButton:
+                self.Note_Buttons[name].destroy()
+                del self.Note_Buttons[name]
+            del self.Notes[name]
+            NoteKeys = list(self.Notes.keys())
+
+            self.messageBox.delete("1.0", tk.END)
+            if len(NoteKeys) != 0:
+                self.currentNote = list(self.Notes.keys())[0]
+                self.current_note_label.configure(text = self.currentNote)
+                self.messageBox.insert("1.0", self.Notes[self.currentNote])
+            else:
+                self.current_note_label.configure(text = "")
+                self.currentNote = ""
+                self.new_note(simpledialog.askstring("New Note", "What do you wanna name the note?"))
+    
+    def delete_note_fromButton(self, confirm):
+        if confirm:
+            self.delete_note(self.currentNote, True)
     
     def new_note(self, name):
         if name:
@@ -207,9 +235,10 @@ class Application(ctk.CTk):
             self.create_note_button(name)
     
     def create_note_button(self, name):
-        newButton = ctk.CTkButton(self.notesFrame, text=name, command=lambda: self.open_note(name))
-        newButton.pack(pady=5)
-        self.Note_Buttons[name] = newButton
+        if name:
+            newButton = ctk.CTkButton(self.notesFrame, text=name, command=lambda: self.open_note(name))
+            newButton.pack(pady=5)
+            self.Note_Buttons[name] = newButton
 
 if __name__ == "__main__":
     print("Starting..")
